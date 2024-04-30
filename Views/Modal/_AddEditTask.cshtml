@@ -1,0 +1,36 @@
+﻿<div id="addEditTaskModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addEditTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEditTaskModalForm" action="/Task/Create">
+                <input type="hidden" id="Id" name="Id" class="form-control" value="0">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="addEditTaskModalLabel">Add Task</h4>
+                    <button type="button" class="btn-close btnClose" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="TaskName" class="form-label">Task Name</label>
+                        <input type="text" id="TaskName" name="TaskName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="InputType" class="form-label">Input Type</label>
+                        @Html.DropDownList("InputType", ViewBag.InputTypes, "-- Select --", new { @class = "form-select", @id = "InputType", @name = "InputType" })
+                    </div>
+                    <div class="mb-3">
+                        <label for="Instructions" class="form-label">Instrucions</label>
+                        <input type="text" id="Instructions" name="Instructions" class="form-control">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="IsOptional" name="IsOptional">
+                        <label class="form-check-label" for="IsOptional">Is Optional</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="addEditTaskModalFormSaveBtn" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+﻿<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">Home</a></li>
+                    <li class="breadcrumb-item active">Organization List</li>
+                </ol>
+            </div>
+            <h4 class="page-title">Organization List</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-end mb-3">
+                    <button type="button" id="btnAddOrganization" class="btn btn-sm btn-outline-primary">Add Organization</button>
+                </div>
+
+                <table id="tblOrganization" class="table table-sm dt-responsive nowrap table-striped w-100">
+                    <thead>
+                        <tr>
+                            <th>SerNo</th>
+                            <th>Organization Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Modal/_AddEditOrganization.cshtml" />
+
+@section scripts {
+    <script src="~/js/pages/Organization.js"></script>
+}

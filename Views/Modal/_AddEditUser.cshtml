@@ -1,0 +1,47 @@
+﻿<div id="addEditUserModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addEditUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEditUserModalForm" action="/User/Create">
+                <input type="hidden" id="Id" name="Id" class="form-control" value="0">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="addEditUserModalLabel">Add User</h4>
+                    <button type="button" class="btn-close btnClose" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="FirstName" class="form-label">First Name</label>
+                        <input type="text" id="FirstName" name="FirstName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="LastName" class="form-label">Last Name</label>
+                        <input type="text" id="LastName" name="LastName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="text" id="Email" name="Email" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="PhoneNumber" class="form-label">Phone</label>
+                        <input type="text" id="PhoneNumber" name="PhoneNumber" class="form-control">
+                    </div>
+                    @if(User.IsInRole(UserRoles.SuperAdmin))
+                    {
+                        <div class="mb-3">
+                            <label for="OrganizationId" class="form-label">Organization</label>
+                            @Html.DropDownList("OrganizationId", ViewBag.OrganizationList, "-- Select --", new { @class = "form-select", @id = "OrganizationId", @name = "OrganizationId" })
+                        </div>
+                    }
+                    <div class="mb-3">
+                        <label for="Website" class="form-label">Website</label>
+                        <input type="text" id="Website" name="Website" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="addEditUserModalFormSaveBtn" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

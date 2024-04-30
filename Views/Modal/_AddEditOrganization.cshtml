@@ -1,0 +1,24 @@
+﻿<div id="addEditOrganizationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addEditOrganizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEditOrganizationModalForm" action="/Organization/Create">
+                <input type="hidden" id="Id" name="Id" class="form-control" value="0">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="addEditOrganizationModalLabel">Add Organization</h4>
+                    <button type="button" class="btn-close btnClose" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="OrganizationName" class="form-label">Organization</label>
+                        <input type="text" id="OrganizationName" name="OrganizationName" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="addEditOrganizationModalFormSaveBtn" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

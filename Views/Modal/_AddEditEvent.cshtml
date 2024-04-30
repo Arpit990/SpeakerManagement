@@ -1,0 +1,32 @@
+﻿<div id="addEditEventModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addEditEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEditEventModalForm" action="/Event/Create" enctype="multipart/form-data">
+                <input type="hidden" id="Id" name="Id" class="form-control" value="0">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="addEditEventModalLabel">Add Event</h4>
+                    <button type="button" class="btn-close btnClose" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="EventName" class="form-label">Event Name</label>
+                        <input type="text" id="EventName" name="EventName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="InputType" class="form-label">Event Logo</label>
+                        <input type="file" id="EventLogo" name="EventLogo" class="form-control" accept=".png, .jpg, .jpeg">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Instructions" class="form-label">Event Date</label>
+                        <input type="text" id="EventDate" name="EventDate" class="form-control" data-provide="datepicker" data-date-container="#datepicker1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="addEditEventModalFormSaveBtn" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
