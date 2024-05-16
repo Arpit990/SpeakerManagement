@@ -7,8 +7,8 @@ namespace SpeakerManagement.Helper
         #region Private
         protected readonly static string smtp = "smtp.gmail.com";
         protected readonly static int smtpPort = 587;
-        protected readonly static string mail = "jaysantoki786@gmail.com";
-        protected readonly static string appCode = "sofv riik dbaa tnee";
+        protected readonly static string mail = "";
+        protected readonly static string appCode = "";
         #endregion
 
         #region Public
