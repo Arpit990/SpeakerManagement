@@ -1,16 +1,13 @@
 var tblTasks;
 
 $(document).ready(function () {
+    FormValidation();
     BindTaskTable();
 
     $("#btnAddTask").on("click", function () {
         $("#addEditTaskModalLabel").html("Add Task");
         $("#addEditTaskModalForm").attr("action", "/Task/Create");
         $("#addEditTaskModal").modal("show");
-    });
-
-    $("#addEditTaskModalFormSaveBtn").on("click", function () {
-        SubmitFormData();
     });
 
     $(".btnClose").on("click", function () {
@@ -34,14 +31,14 @@ function BindTaskTable() {
         },
         { "title": "Task Name", "name": "taskName", "orderable": false, "targets": 1 },
         { "title": "Input Type", "name": "inputType", "orderable": false, "targets": 2 },
-        { "title": "Instruction", "name": "instructions", "orderable": false, "targets": 3 },
+        { "title": "Validation", "name": "validation", "orderable": false, "targets": 3 },
+        { "title": "Instruction", "name": "instructions", "orderable": false, "targets": 4 },
         {
             "title": "Is Optional",
             "name": "isOptional",
             "orderable": false,
-            "targets": 4,
+            "targets": 5,
             "render": function (data, type, row) {
-                console.log(row.isOptional)
                 if (row.isOptional) {
                     return "Yes";
                 }
@@ -52,7 +49,7 @@ function BindTaskTable() {
             "title": "Action",
             "name": null,
             "orderable": false,
-            "targets": 5,
+            "targets": 6,
             "render": function (data, type, row) {
                 return `
                     <a href="javascript: void(0)" data-id="${row.id}" class="text-primary fs-5 text-decoration-none btnEditTask">
@@ -88,7 +85,7 @@ function BindTaskTable() {
                             type: "POST",
                             data: { id: id },
                             successCallback: function (response) {
-                                showAlert("delete");
+                                showAlert(response.responseJSON);
                                 tblTasks.draw();
                             },
                             errorCallback: function (xhr, status, error) {
@@ -113,7 +110,7 @@ function SubmitFormData() {
         successCallback: function (response) {
             $("#addEditTaskModal").modal("hide");
             ResetForm("#addEditTaskModalForm");
-            showAlert("create");
+            showAlert(response.responseJSON);
             tblTasks.draw();
         },
         errorCallback: function (xhr, status, error) {
@@ -128,7 +125,10 @@ function editTaskDetail(id) {
         type: "GET",
         data: { id: id },
         successCallback: function (response) {
-            BindFormData(response, "#addEditTaskModalForm");
+            if (response.responseJSON.isSuccess)
+                BindFormData(response.responseJSON.responseData, "#addEditTaskModalForm");
+            else
+                showAlert(response.responseJSON);
         },
         errorCallback: function (xhr, status, error) {
             console.error(error);
@@ -136,3 +136,36 @@ function editTaskDetail(id) {
     });
 }
 
+
+function FormValidation() {
+    $("#addEditTaskModalForm").validate({
+        rules: {
+            TaskName: {
+                required: true,
+            },
+            InputType: {
+                required: true
+            },
+            Validation: {
+                required: true
+            }
+        },
+        messages: {
+            TaskName: "Please Enter Task Name",
+            InputType: "Please Select Input Type",
+            Validation: "Please Select Validation Type",
+        },
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        highlight: function (element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        },
+        submitHandler: function () {
+            SubmitFormData();
+        }
+    });
+}

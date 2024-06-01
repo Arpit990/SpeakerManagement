@@ -31,6 +31,11 @@
                             <label for="OrganizationId" class="form-label">Organization</label>
                             @Html.DropDownList("OrganizationId", ViewBag.OrganizationList, "-- Select --", new { @class = "form-select", @id = "OrganizationId", @name = "OrganizationId" })
                         </div>
+
+                        <div class="mb-3">
+                            <label for="UserRole" class="form-label">User Role</label>
+                            @Html.DropDownList("UserRole", ViewBag.UserRoleList, "-- Select --", new { @class = "form-select", @id = "UserRole", @name = "UserRole" })
+                        </div>
                     }
                     <div class="mb-3">
                         <label for="Website" class="form-label">Website</label>
@@ -39,7 +44,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="addEditUserModalFormSaveBtn" class="btn btn-primary">Save</button>
+                    <button type="submit" id="addEditUserModalFormSaveBtn" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>

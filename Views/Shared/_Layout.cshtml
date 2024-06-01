@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using SpeakerManagement.Entities
+@inject UserManager<ApplicationUser> UserManager;
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,10 +11,27 @@
     <script src="~/assets/js/hyper-config.js"></script>
     <link href="~/assets/css/app-saas.min.css" rel="stylesheet" type="text/css" id="app-style" />
     <link href="~/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- datatable css -->
     <link href="~/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/vendor/datatables.net-select-bs5/css/select.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- flatpickr css -->
     <link href="~/assets/vendor/flatpickr/flatpickr.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="~/SpeakerManagement.styles.css" asp-append-version="true" />    
+
+    <!-- select2 css -->
+    <link href="~/assets/vendor/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- quill css -->
+    <link href="~/assets/vendor/quill/quill.core.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/vendor/quill/quill.snow.css" rel="stylesheet" type="text/css" />
+
+    <!-- quill js -->
+    <script src="~/assets/vendor/quill/quill.min.js"></script>
+
+    <link rel="stylesheet" href="~/SpeakerManagement.styles.css" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <div class="wrapper">
@@ -24,20 +45,20 @@
                         <!-- Logo light -->
                         <a href="index.html" class="logo-light">
                             <span class="logo-lg">
-                                <img src="~/assets/images/logo.png" alt="logo">
+                                <img src="~/assets/images/small-logo.webp" alt="logo">
                             </span>
                             <span class="logo-sm">
-                                <img src="~/assets/images/logo-sm.png" alt="small logo">
+                                <img src="~/assets/images/small-logo.webp" alt="small logo">
                             </span>
                         </a>
 
                         <!-- Logo Dark -->
                         <a href="index.html" class="logo-dark">
                             <span class="logo-lg">
-                                <img src="~/assets/images/logo-dark.png" alt="dark logo">
+                                <img src="~/assets/images/logo.webp" alt="dark logo">
                             </span>
                             <span class="logo-sm">
-                                <img src="~/assets/images/logo-dark-sm.png" alt="small logo">
+                                <img src="~/assets/images/small-logo.webp" alt="small logo">
                             </span>
                         </a>
                     </div>
@@ -201,14 +222,26 @@
                         </a>
                     </li>
 
+                    @{
+                        var userName = UserManager.GetUserName(User);
+                        var role = string.Empty;
+
+                        if (User.IsInRole(UserRoles.SuperAdmin))
+                            role = UserRoles.SuperAdmin;
+                        else if (User.IsInRole(UserRoles.Admin))
+                            role = UserRoles.Admin;
+                        else if (User.IsInRole(UserRoles.Speaker))
+                            role = UserRoles.Speaker;
+                    }
+
                     <li class="dropdown">
                         <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                             <span class="account-user-avatar">
-                                <img src="~/assets/images/users/avatar-1.jpg" alt="user-image" width="32" class="rounded-circle">
+                                <img src="~/assets/images/users/avatar.jpg" alt="user-image" width="32" class="rounded-circle">
                             </span>
                             <span class="d-lg-flex flex-column gap-1 d-none">
-                                <h5 class="my-0">Dominic Keller</h5>
-                                <h6 class="my-0 fw-normal">Founder</h6>
+                                <h5 class="my-0">@userName</h5>
+                                <h6 class="my-0 fw-normal">@role</h6>
                             </span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
@@ -260,20 +293,20 @@
             <!-- Brand Logo Light -->
             <a href="index.html" class="logo logo-light">
                 <span class="logo-lg">
-                    <img src="~/assets/images/logo.png" alt="logo">
+                    <img src="~/assets/images/small-logo.webp" alt="logo">
                 </span>
                 <span class="logo-sm">
-                    <img src="~/assets/images/logo-sm.png" alt="small logo">
+                    <img src="~/assets/images/small-logo.webp" alt="small logo">
                 </span>
             </a>
 
             <!-- Brand Logo Dark -->
             <a href="index.html" class="logo logo-dark">
                 <span class="logo-lg">
-                    <img src="~/assets/images/logo-dark.png" alt="dark logo">
+                    <img src="~/assets/images/small-logo.webp" alt="dark logo">
                 </span>
                 <span class="logo-sm">
-                    <img src="~/assets/images/logo-dark-sm.png" alt="small logo">
+                    <img src="~/assets/images/small-logo.webp" alt="small logo">
                 </span>
             </a>
 
@@ -327,8 +360,8 @@
 
                         <li class="side-nav-item">
                             <a asp-controller="User" asp-action="Index" class="side-nav-link">
-                                <i class="ri-todo-line"></i>
-                                <span> Create Admin </span>
+                                <i class="ri-user-add-line"></i>
+                                <span> User </span>
                             </a>
                         </li>
                     }
@@ -336,24 +369,29 @@
                     @if (User.Identity.IsAuthenticated && User.IsInRole(UserRoles.Admin))
                     {
                         <li class="side-nav-item">
-                            <a asp-controller="User" asp-action="Index" class="side-nav-link">
-                                <i class="ri-todo-line"></i>
-                                <span> Create Speaker </span>
+                            <a asp-controller="Event" asp-action="Index" class="side-nav-link">
+                                <i class="ri-calendar-2-line"></i>
+                                <span> Event </span>
                             </a>
                         </li>
-
                         <li class="side-nav-item">
-                            <a asp-controller="Event" asp-action="Index" class="side-nav-link">
-                                <i class="ri-todo-line"></i>
-                                <span> Create Event </span>
+                            <a asp-controller="User" asp-action="Index" class="side-nav-link">
+                                <i class="ri-user-add-line"></i>
+                                <span> User </span>
                             </a>
                         </li>
                     }
 
                     @if (User.Identity.IsAuthenticated && User.IsInRole(UserRoles.Speaker))
                     {
+                        <li class="side-nav-item">
+                            <a asp-controller="Speaker" asp-action="Index" class="side-nav-link">
+                                <i class="ri-todo-line"></i>
+                                <span> Assigned Tasks </span>
+                            </a>
+                        </li>
                     }
-                    
+
                 </ul>
                 <!--- End Sidemenu -->
 
@@ -400,9 +438,13 @@
     <script src="~/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
     <script src="~/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
     <script src="~/assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+    <script src="~/assets/vendor/datatables.net-select/js/dataTables.select.min.js"></script>
     <script src="~/assets/vendor/flatpickr/flatpickr.min.js"></script>
+    <script src="~/assets/vendor/dropzone/min/dropzone.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.8/sweetalert2.all.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
     <script src="~/js/validation.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/datatable.js" asp-append-version="true"></script>

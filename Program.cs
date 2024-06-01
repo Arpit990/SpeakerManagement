@@ -45,7 +45,10 @@ services.ConfigureApplicationCookie(options => options.LoginPath = "/Account/Log
 #region Services
 services.AddScoped<IAccountRepository, AccountRepository>();
 services.AddScoped<IEventRepository, EventRepository>();
+services.AddScoped<IEventTaskRepository, EventTaskRepository>();
 services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+services.AddScoped<ISpeakerEventRepository, SpeakerEventRepository>();
+services.AddScoped<ISpeakerTaskRepository, SpeakerTaskRepository>();
 services.AddScoped<ITaskRepository, TaskRepository>();
 services.AddScoped<IUserRepository, UserRepository>();
 #endregion
@@ -54,6 +57,8 @@ services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSession();
 
 var app = builder.Build();
 

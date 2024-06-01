@@ -6,12 +6,13 @@ namespace SpeakerManagement.Helper
     {
         public ResponseJSON ResponseJSON { get; set; }
 
-        public static FormResult Success(object responseData = null)
+        public static FormResult Success(bool isSuccess, string? message = null, object? responseData = null)
         {
             var formResult = new FormResult();
             var responseJSON = new ResponseJSON()
             {
-                Message = "Success",
+                IsSuccess = isSuccess,
+                Message = message,
                 ResponseCode = Enums.AjaxResponse.Success.ToString(),
                 ResponseData = responseData
             };
@@ -109,11 +110,11 @@ namespace SpeakerManagement.Helper
         }
     }
 
+
     public class Error
     {
         public string Field { get; set; }
         public string Message { get; set; }
-
         public Error()
         { }
         public Error(string field, string message)
@@ -123,12 +124,13 @@ namespace SpeakerManagement.Helper
         }
     }
 
+
     public class ResponseJSON
     {
-        public object ResponseData { get; set; }
+        public bool IsSuccess { get; set; }
+        public string? Message { get; set; }
         public string ResponseCode { get; set; }
-        public string Message { get; set; }
-        public string ConfirmMessage { get; set; }
+        public object? ResponseData { get; set; }
         public List<Error> Errors { get; set; }
     }
 }

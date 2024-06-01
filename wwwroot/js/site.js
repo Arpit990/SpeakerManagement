@@ -3,25 +3,27 @@ function GlobalAjax({
     data,
     url,
     type,
+    isMultipartFormData = false,
     successCallback,
     errorCallback
 }) {
-    
 
     // Make an AJAX POST request
     $.ajax({
         url: url,
         type: type,
         data: data,
+        contentType: isMultipartFormData ? false : undefined,
+        processData: isMultipartFormData ? false : undefined,
         success: function (response) {
-            if (response.ResponseJSON.ResponseCode == "Success") {
+            if (response.responseJSON.responseCode == "Success") {
 
                 //remove error treatments
-                $(formSelector).find('input, select, textarea').each(function () {
+                /*$(formSelector).find('input, select, textarea').each(function () {
                     $(this).removeClass('is-invalid');
                     // error message in tooltip over the icon
                     $(this).parent().parent().find('label').find('.error-tooltip-popup').remove();
-                });
+                });*/
 
                 // Invoke success callback if provided
                 if (successCallback && typeof successCallback === 'function') {
@@ -31,9 +33,9 @@ function GlobalAjax({
             }
         },
         error: function (xhr, status, error) {
-            if (response.ResponseJSON.ResponseCode == "Error") {
+            if (response.responseJSON.responseCode == "Error") {
 
-                DisplayErrorsOnForm(formSelector, response.ResponseJSON.Errors);
+                DisplayErrorsOnForm(formSelector, response.responseJSON.Errors);
 
                 var infoText = `<div class="alert alert-danger alert-dismissible fade show" role="alert"> <span class="iconify alert-icon" data-icon="ri:alert-line" data-inline="false"></span> ${response.ResponseJSON.Message}.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div>`;
                 $('#LERETAGlobalFormSaveSlideUpBar .slideupbar-notification').prepend(infoText);
@@ -91,12 +93,12 @@ function SerializeFormData(formElement) {
 
     // Serialize non-file input fields
     if ($(formElement).find('input[type!="file"]').length > 0) {
-        dataString += '&' + $(formElement).find('input[type!="file"]').serialize();
+        dataString += '&' + $(formElement).find('input[type!="file"][type!="checkbox"]').serialize();
     }
 
     // Serialize file input field
     var fileInput = $(formElement).find('input[type="file"]')[0];
-    if (fileInput.files.length > 0) {
+    if (fileInput && fileInput.files.length > 0) {
         var file = fileInput.files[0];
         var elementName = $(fileInput).attr('name');
         dataString += '&' + elementName + '=' + encodeURIComponent(file.name);
@@ -149,6 +151,14 @@ function OnModalHide(modalSelector, callback) {
         console.error('Invalid modal selector:', modalSelector);
         return;
     }
+
+    // Reset the form validation
+    $(modalSelector).validate().resetForm();
+
+    // Remove any added classes for highlighting
+    $(modalSelector + " :input").removeClass('is-invalid is-valid');
+    $(modalSelector + " textarea").removeClass('is-invalid is-valid');
+    $(modalSelector + " select").removeClass('is-invalid is-valid');
 
     // Attach the callback function to the 'hide.bs.modal' event of the modal
     $(modalSelector).on('hide.bs.modal', function () {

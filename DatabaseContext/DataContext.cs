@@ -17,7 +17,11 @@ namespace SpeakerManagement.DatabaseContext
         #region Entities
         // DbSet properties for your entities
         public DbSet<Events> Events { get; set; }
+        public DbSet<EventTasks> EventTasks { get; set; }
         public DbSet<Organization> Organizations { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<SpeakerEvents> SpeakerEvents { get; set; }
+        public DbSet<SpeakerTasks> SpeakerTasks { get; set; }
         public DbSet<Tasks> Tasks { get; set; }
         #endregion
 

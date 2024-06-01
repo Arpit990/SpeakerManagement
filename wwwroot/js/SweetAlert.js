@@ -21,17 +21,18 @@ const sweetAlertConfigs = [
 
 
 // Function to display SweetAlert based on action type
-function showAlert(action) {
-    const config = sweetAlertConfigs.find(config => config.action === action);
+function showAlert(data) {
+    if (data) {
+        let msg = data.message;
+        let icon = data.isSuccess ? "success" : "error";
 
-    if (config) {
         Swal.fire({
-            title: config.title,
-            text: config.text,
-            icon: config.icon
+            title: msg,
+            icon: icon
         });
-    } else {
-        console.error(`SweetAlert configuration not found for action: ${action}`);
+    }
+    else {
+        console.error(`SweetAlert configuration not found for action`);
     }
 }
 

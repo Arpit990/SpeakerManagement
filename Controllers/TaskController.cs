@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SpeakerManagement.Data;
 using SpeakerManagement.Entities;
 using SpeakerManagement.Helper;
-using SpeakerManagement.Infrastructure;
 using SpeakerManagement.Repository;
 
 namespace SpeakerManagement.Controllers
@@ -26,13 +25,14 @@ namespace SpeakerManagement.Controllers
         public IActionResult Index()
         {
             ViewBag.InputTypes = Common.InputTypeList();
+            ViewBag.ValidationType = Common.ValidationList();
             return View();
         }
 
-        public async Task<IActionResult> GetTaskList(GridSearch gridSearch)
+        public IActionResult GetTaskList(GridSearch gridSearch)
         {
-            var orgs = await _taskRepository.GetAll();
-            return Json(orgs.SearchGrid(gridSearch));
+            var result = _taskRepository.GetTaskList(gridSearch);
+            return Json(result);
         }
 
         [HttpPost]
@@ -44,18 +44,21 @@ namespace SpeakerManagement.Controllers
                 var result = await _taskRepository.SaveChangesAsync();
 
                 if (result > 0)
-                    return Json(FormResult.Success());
+                    return Json(FormResult.Success(true, Params.Save));
+                else
+                    return Json(FormResult.Success(false, Params.SaveErr));
             }
             return Json(FormResult.Error(ModelState));
         }
 
         public async Task<IActionResult> Get(int id)
         {
-            var org = await _taskRepository.Get(x => x.Id == id);
-            if (org != null)
-                return Json(org);
+            var task = await _taskRepository.Get(x => x.Id == id);
+
+            if (task != null)
+                return Json(FormResult.Success(true, Params.Get, task));
             else
-                return Json(FormResult.Success("Record Not Found"));
+                return Json(FormResult.Success(false, Params.NoRecord));
         }
 
         [HttpPost]
@@ -67,7 +70,9 @@ namespace SpeakerManagement.Controllers
                 var result = await _taskRepository.SaveChangesAsync();
 
                 if (result > 0)
-                    return Json(FormResult.Success());
+                    return Json(FormResult.Success(true, Params.Update));
+                else
+                    return Json(FormResult.Success(false, Params.UpdateErr));
             }
             return Json(FormResult.Error(ModelState));
         }
@@ -79,9 +84,9 @@ namespace SpeakerManagement.Controllers
             var result = await _taskRepository.SaveChangesAsync();
 
             if (result > 0)
-                return Json(FormResult.Success());
+                return Json(FormResult.Success(true, Params.Delete));
             else
-                return Json(FormResult.Success("Record Not Found"));
+                return Json(FormResult.Success(false, Params.NoRecord));
         }
         #endregion
     }

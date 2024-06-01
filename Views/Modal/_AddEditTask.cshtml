@@ -18,6 +18,10 @@
                         @Html.DropDownList("InputType", ViewBag.InputTypes, "-- Select --", new { @class = "form-select", @id = "InputType", @name = "InputType" })
                     </div>
                     <div class="mb-3">
+                        <label for="InputType" class="form-label">Validation Type</label>
+                        @Html.DropDownList("Validation", ViewBag.ValidationType, "-- Select --", new { @class = "form-select", @id = "Validation", @name = "Validation" })
+                    </div>
+                    <div class="mb-3">
                         <label for="Instructions" class="form-label">Instrucions</label>
                         <input type="text" id="Instructions" name="Instructions" class="form-control">
                     </div>
@@ -28,7 +32,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="addEditTaskModalFormSaveBtn" class="btn btn-primary">Save</button>
+                    <button type="submit" id="addEditTaskModalFormSaveBtn" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>

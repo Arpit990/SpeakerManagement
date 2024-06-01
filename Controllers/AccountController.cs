@@ -58,6 +58,8 @@ namespace SpeakerManagement.Controllers
             return RedirectToAction("Login", "Account");
         }
 
+        public IActionResult ResetPassword() => View();
+
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
@@ -65,9 +67,9 @@ namespace SpeakerManagement.Controllers
             if (userId != null && token != null)
             {
                 var result = await _userRepository.ConfirmEmail(userId, token);
-                if (result)
+                if (result.IsSuccess)
                 {
-                    return RedirectToAction("EmailConfirmed", "Account");
+                    return RedirectToAction("Login", "Account");
                 }
             }
             return RedirectToAction("Error", "Home");

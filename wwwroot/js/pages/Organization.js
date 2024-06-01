@@ -1,16 +1,13 @@
 var tblOrganization;
 
 $(document).ready(function () {
-    BindOrganizationTable();
+    FormValidation();
+    BindOrganizationTable();    
 
     $("#btnAddOrganization").on("click", function () {
         $("#addEditOrganizationModalLabel").html("Add Organization");
         $("#addEditOrganizationModalForm").attr("action", "/Organization/Create");
         $("#addEditOrganizationModal").modal("show");
-    });
-
-    $("#addEditOrganizationModalFormSaveBtn").on("click", function () {
-        SubmitFormData();
     });
 
     $(".btnClose").on("click", function () {
@@ -53,6 +50,7 @@ function BindOrganizationTable() {
     tblOrganization = BindDataTable({
         tableSelector: "#tblOrganization",
         ajaxUrl: "/Organization/GetOrganizationList",
+        singleRowSelectable: true,
         columnDefs: colDef,
         drawComplete: function () {
             $(".btnEditOrganization").off().on("click", function () {
@@ -73,7 +71,7 @@ function BindOrganizationTable() {
                             type: "POST",
                             data: { id: id },
                             successCallback: function (response) {
-                                showAlert("delete");
+                                showAlert(response.responseJSON);
                                 tblOrganization.draw();
                             },
                             errorCallback: function (xhr, status, error) {
@@ -96,8 +94,9 @@ function SubmitFormData() {
         type: "POST",
         data: data,
         successCallback: function (response) {
+            $("#addEditOrganizationModalForm").modal("hide");
             ResetForm("#addEditOrganizationModalForm");
-            showAlert("create");
+            showAlert(response.responseJSON);
             tblOrganization.draw();
         },
         errorCallback: function (xhr, status, error) {
@@ -112,7 +111,10 @@ function editOrganizationDetail(id) {
         type: "GET",
         data: { id: id },
         successCallback: function (response) {
-            BindFormData(response, "#addEditOrganizationModalForm");
+            if (response.responseJSON.isSuccess)
+                BindFormData(response.responseJSON.responseData, "#addEditOrganizationModalForm");
+            else
+                showAlert(response.responseJSON);
         },
         errorCallback: function (xhr, status, error) {
             console.error(error);
@@ -120,3 +122,29 @@ function editOrganizationDetail(id) {
     })
 }
 
+
+
+function FormValidation() {
+    $("#addEditOrganizationModalForm").validate({
+        rules: {
+            OrganizationName: {
+                required: true,
+            }
+        },
+        messages: {
+            OrganizationName: "Please Enter Organization Name",
+        },
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        highlight: function (element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        },
+        submitHandler: function () {
+            SubmitFormData();
+        }
+    });
+}

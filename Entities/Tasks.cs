@@ -10,6 +10,7 @@ namespace SpeakerManagement.Entities
         public int Id { get; set; }
         public string TaskName { get; set; }
         public string InputType { get; set; }
+        public string Validation {  get; set; }
         public string? Instructions { get; set; }
         public bool IsOptional { get; set; } = false;
     }

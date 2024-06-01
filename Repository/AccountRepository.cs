@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using SpeakerManagement.Data;
 using SpeakerManagement.Entities;
 using SpeakerManagement.ViewModels.Account;
 
@@ -18,16 +20,19 @@ namespace SpeakerManagement.Repository
         #region Private
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         #endregion
 
         #region Constructor
         public AccountRepository(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager
+            SignInManager<ApplicationUser> signInManager,
+            IHttpContextAccessor httpContextAccessor
         )
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _httpContextAccessor = httpContextAccessor;
         }
         #endregion
 
@@ -44,19 +49,21 @@ namespace SpeakerManagement.Repository
                     var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
                     if (result.Succeeded)
                     {
+                        _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id);
+
                         // Get the role of the user
                         var role = await _userManager.GetRolesAsync(user);
 
                         // Determine the dashboard route based on the user's role
-                        if (role.Contains("Super Admin"))
+                        if (role.Contains(UserRoles.SuperAdmin))
                         {
                             return "/Home/SuperAdminDashboard";
                         }
-                        else if (role.Contains("Admin"))
+                        else if (role.Contains(UserRoles.Admin))
                         {
                             return "/Home/AdminDashboard";
                         }
-                        else if (role.Contains("Speaker"))
+                        else if (role.Contains(UserRoles.Speaker))
                         {
                             return "/Home/SpeakerDashboard";
                         }

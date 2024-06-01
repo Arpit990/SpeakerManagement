@@ -1,0 +1,26 @@
+﻿<div id="assignEventModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="assignEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="assignEventModalForm" action="/Event/AssignEventToSpeaker">
+                <input type="hidden" id="EventIds" name="EventIds" class="form-control" value="0">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="assignEventModalLabel">Assign Event</h4>
+                    <button type="button" class="btn-close btnClose" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row align-items-end">
+                        <div class="col-8 mb-3">
+                            <label for="Task" class="form-label">Speaker</label>
+                            @Html.DropDownList("SpeakerId", ViewBag.SpeakerList, "-- Select --", new { @class = "form-select", @id = "SpeakerId", @name = "SpeakerId" })
+                        </div>                       
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" id="assignEventModalFormSaveBtn" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

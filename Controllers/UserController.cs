@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SpeakerManagement.Data;
 using SpeakerManagement.Entities;
 using SpeakerManagement.Helper;
-using SpeakerManagement.Infrastructure;
 using SpeakerManagement.Repository;
-using SpeakerManagement.ViewModels.Account;
 
 namespace SpeakerManagement.Controllers
 {
@@ -42,55 +40,51 @@ namespace SpeakerManagement.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.OrganizationList = await _organizationRepository.GetOrganizationDropDown();
+            ViewBag.UserRoleList = Common.UserRoleList();
             return View();
         }
 
-        public async Task<IActionResult> GetUserList(GridSearch gridSearch)
+        public async Task<IActionResult> GetUserList(GridSearch gridSearch, string UserRole)
         {
-            var user = await _signInManager.UserManager.GetUserAsync(User);
-            var roles = await _userManager.GetRolesAsync(user);
-
-            var usersList = new List<UserInfo>();
-            if (roles.Contains(UserRoles.SuperAdmin))
-            {
-                usersList = await _userRepository.GetUsersList(UserRoles.Admin);
-            }
-            else if (roles.Contains(UserRoles.Admin))
-            {
-                usersList = await _userRepository.GetUsersList(UserRoles.Speaker);
-            }
-
-            return Json(usersList.SearchGrid(gridSearch));
+            var result = await _userRepository.GetUsersList(gridSearch);
+            return Json(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ApplicationUser model)
+        public async Task<IActionResult> Create(ApplicationUser model, string UserRole = UserRoles.Speaker)
         {
             if (ModelState.IsValid)
             {
-                var createdUserRole = string.Empty;
-                var user = await _userManager.GetUserAsync(HttpContext.User);
+                int orgId = 0;
+                ApplicationUser user = await _userManager.GetUserAsync(User);
 
-                if (User.IsInRole(UserRoles.SuperAdmin))
-                    createdUserRole = UserRoles.Admin;
-                else if(User.IsInRole(UserRoles.Admin))
-                    createdUserRole = UserRoles.Speaker;
+                if (user != null)
+                {
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (roles.Contains(UserRoles.Admin))
+                        orgId = user.OrganizationId;
+                    else if (roles.Contains(UserRoles.SuperAdmin))
+                        orgId = model.OrganizationId;
+                }
 
-                var result = await _userRepository.CreateUser(model, createdUserRole, user.OrganizationId, HttpContext.Request);
-                
-                if (result)
-                    return Json(FormResult.Success());
+                var result = await _userRepository.CreateUser(model, UserRole, orgId, HttpContext.Request);
+
+                if (result.IsSuccess)
+                    return Json(FormResult.Success(true, result.Message));
+                else
+                    return Json(FormResult.Success(false, Params.SaveErr));
             }
             return Json(FormResult.Error(ModelState));
         }
 
         public async Task<IActionResult> Get(string id)
         {
-            var org = await _userRepository.Get(x => x.Id == id);
-            if (org != null)
-                return Json(org);
+            var user = await _userRepository.Get(x => x.Id == id);
+
+            if (user != null)
+                return Json(FormResult.Success(true, Params.Get, user));
             else
-                return Json(FormResult.Success("Record Not Found"));
+                return Json(FormResult.Success(false, Params.NoRecord));
         }
 
         [HttpPost]
@@ -100,8 +94,10 @@ namespace SpeakerManagement.Controllers
             {
                 var result = await _userRepository.UpdateUserDetail(model);
 
-                if (result)
-                    return Json(FormResult.Success());
+                if (result.IsSuccess)
+                    return Json(FormResult.Success(true, Params.Update));
+                else
+                    return Json(FormResult.Success(false, Params.UpdateErr));
             }
             return Json(FormResult.Error(ModelState));
         }
@@ -111,10 +107,10 @@ namespace SpeakerManagement.Controllers
         {
             var result = await _userRepository.DeleteUser(id);
 
-            if (result)
-                return Json(FormResult.Success());
+            if (result.IsSuccess)
+                return Json(FormResult.Success(true, Params.Delete));
             else
-                return Json(FormResult.Success("Record Not Found"));
+                return Json(FormResult.Success(false, Params.NoRecord));
         }
         #endregion
     }

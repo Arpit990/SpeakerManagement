@@ -10,8 +10,5 @@ namespace SpeakerManagement.Entities
         public string Logo { get; set; }
         public DateTime EventDate { get; set; }
         public string CreatedBy { get; set; }
-
-        [NotMapped]
-        public IFormFile EventLogo { get; set; }
     }
 }

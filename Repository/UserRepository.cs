@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SpeakerManagement.Data;
 using SpeakerManagement.DatabaseContext;
@@ -12,11 +14,12 @@ namespace SpeakerManagement.Repository
     #region interface
     public interface IUserRepository : IBaseRepository<ApplicationUser>
     {
-        Task<List<UserInfo>> GetUsersList(string userRole = null);
-        Task<bool> CreateUser(ApplicationUser user, string role, int organizationId, HttpRequest request);
-        Task<bool> ConfirmEmail(string userId, string token);
-        Task<bool> UpdateUserDetail(ApplicationUser user);
-        Task<bool> DeleteUser(string userId);
+        Task<GridResult> GetUsersList(GridSearch gridSearch);
+        Task<List<SelectListItem>> GetUsersForDropDown();
+        Task<MethodResponse<string>> CreateUser(ApplicationUser user, string role, int organizationId, HttpRequest request);
+        Task<MethodResponse<string>> ConfirmEmail(string userId, string token);
+        Task<MethodResponse<string>> UpdateUserDetail(ApplicationUser user);
+        Task<MethodResponse<string>> DeleteUser(string userId);
     }
     #endregion
 
@@ -30,43 +33,86 @@ namespace SpeakerManagement.Repository
         #region Constructor
         public UserRepository(
             DataContext dataContext,
-            UserManager<ApplicationUser> userManager
-        ) : base(dataContext)
+            UserManager<ApplicationUser> userManager,
+            IHttpContextAccessor httpContextAccessor
+        ) : base(dataContext, httpContextAccessor)
         {
             _userManager = userManager;
         }
         #endregion
 
         #region Public
-        public async Task<List<UserInfo>> GetUsersList(string userRole = null)
+        public async Task<GridResult> GetUsersList(GridSearch gridSearch)
         {
-            var query = from user in _context.Users
-                        join user_role in _context.UserRoles on user.Id equals user_role.UserId
-                        join role in _context.Roles on user_role.RoleId equals role.Id
-                        join org in _context.Organizations on user.OrganizationId equals org.Id
-                        select new UserInfo
-                        {
-                            UserId = user.Id,
-                            UserName = user.UserName,
-                            FirstName = user.FirstName,
-                            LastName = user.LastName,
-                            Email = user.Email,
-                            PhoneNumber = user.PhoneNumber,
-                            Website = user.Website,
-                            OrganizationName = org.OrganizationName,
-                            Role = role.Name,
-                            OrganizationId = org.Id,
-                            IsActive = user.EmailConfirmed
-                        };
+            int orgId = 0;
+            string role = string.Empty;
+            var loginUserDetail = await GetLoggedInUserDetail();
+            var loginUserRole = await GetLoggedInUserRoles();
 
-            if (userRole != null)
+            if(loginUserRole.IsSuccess) 
             {
-                query = query.Where(x => x.Role.Equals(userRole));
+                if(loginUserRole.Data.Contains(UserRoles.Admin) && loginUserDetail.Data is ApplicationUser appUser)
+                {
+                    orgId = appUser.OrganizationId;
+                    role = UserRoles.Speaker;
+                }
             }
 
-            return await query.ToListAsync();
+            var query = from x_user in _context.Users
+                        join x_user_role in _context.UserRoles on x_user.Id equals x_user_role.UserId
+                        join x_role in _context.Roles on x_user_role.RoleId equals x_role.Id
+                        join x_org in _context.Organizations on x_user.OrganizationId equals x_org.Id
+                        select new UserInfo
+                        {
+                            UserId = x_user.Id,
+                            UserName = x_user.UserName,
+                            FirstName = x_user.FirstName,
+                            LastName = x_user.LastName,
+                            Email = x_user.Email,
+                            PhoneNumber = x_user.PhoneNumber,
+                            Website = x_user.Website,
+                            OrganizationName = x_org.OrganizationName,
+                            Role = x_role.Name,
+                            OrganizationId = x_org.Id,
+                            IsActive = x_user.EmailConfirmed
+                        };
+
+            if(!string.IsNullOrEmpty(role))
+                query = query.Where(x => x.Role == role);
+
+            if(orgId != 0)
+                query = query.Where(x => x.OrganizationId == orgId);
+
+            var result = PredicateSearchExt(gridSearch, query);
+
+            return result;
         }
-        public async Task<bool> CreateUser(ApplicationUser user, string role, int organizationId, HttpRequest request)
+        
+        public async Task<List<SelectListItem>> GetUsersForDropDown()
+        {
+            int orgId = 0;
+            var loginUserDetail = await GetLoggedInUserDetail();
+
+            if (loginUserDetail.IsSuccess)
+            {
+                if (loginUserDetail.Data is ApplicationUser appUser)
+                {
+                    orgId = appUser.OrganizationId;
+                }
+            }
+
+            return await (from user in _context.Users
+                          join userrole in _context.UserRoles on user.Id equals userrole.UserId
+                          join role in _context.Roles on userrole.RoleId equals role.Id
+                          where role.Name == UserRoles.Speaker && user.OrganizationId == orgId
+                          select new SelectListItem
+                          {
+                              Value = user.Id.ToString(),
+                              Text = user.FirstName
+                          }).OrderBy(x => x.Text).ToListAsync();
+        }
+
+        public async Task<MethodResponse<string>> CreateUser(ApplicationUser user, string role, int organizationId, HttpRequest request)
         {
             var adminUser = await _userManager.FindByEmailAsync(user.Email);
             if (adminUser == null)
@@ -75,16 +121,15 @@ namespace SpeakerManagement.Repository
                 {
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    UserName = $"{user.FirstName}_{user.LastName}",
+                    UserName = $"{user.FirstName}.{user.LastName}",
                     PhoneNumber = user.PhoneNumber,
-                    OrganizationId = role == UserRoles.Speaker ? organizationId : user.OrganizationId,
+                    OrganizationId = organizationId,
                     Email = user.Email,
                     Website = user.Website
-                    //EmailConfirmed = true
                 };
 
                 var autoGeneratedPassword = Common.GeneratePassword();
-                
+
                 // Create the user in the database
                 var result = await _userManager.CreateAsync(newAdminUser, autoGeneratedPassword);
                 if (result.Succeeded)
@@ -99,60 +144,41 @@ namespace SpeakerManagement.Repository
                     await _context.SaveChangesAsync();
 
                     // Construct the confirmation link manually
-                    var confirmationLink = $"{request.Scheme}://{request.Host}/Account/ConfirmEmail?userId={newAdminUser.Id}&token={WebUtility.UrlEncode(token)}"; //{WebUtility.UrlEncode(token)}
+                    var confirmationLink = $"{request.Scheme}://{request.Host}/Account/ConfirmEmail?userId={newAdminUser.Id}&token={WebUtility.UrlEncode(token)}";
 
-                    string htmlBody = $@"<html>
-                                                <body>
-                                                    <h1>Hello!</h1>
-                                                    <p>Confirm you email to login into site</p>
-                                                    <br/>
-                                                    <a href='{confirmationLink}'>Confirm Email</a>
-                                                    <br/>
-                                                    Password: {autoGeneratedPassword}
-                                                </body>
-                                            </html>";
+                    SendInvitation(organizationId, user.FirstName, user.Email, confirmationLink, autoGeneratedPassword);
 
-                    MailSender.SendEmailConfirmationMail(user.Email, "Email Confirmation", htmlBody, "");
-
-                    return true;
+                    return MethodResponse<string>.Success(string.Empty, "Invitation Sent Successfully");
                 }
-                return true;
+                return MethodResponse<string>.Fail("Error in user creation");
             }
-            return false;
+            return MethodResponse<string>.Fail($"{user.Email} already exist!");
         }
 
-        public async Task<bool> ConfirmEmail(string userId, string token)
+        public async Task<MethodResponse<string>> ConfirmEmail(string userId, string token)
         {
-            try
+            if (userId != null && token != null)
             {
-                if (userId != null && token != null)
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
                 {
-                    var user = await _userManager.FindByIdAsync(userId);
-                    if (user != null)
+                    var result = await _userManager.ConfirmEmailAsync(user, token);
+                    if (result.Succeeded)
                     {
-                        var result = await _userManager.ConfirmEmailAsync(user, token);
-                        if (result.Succeeded)
-                        {
-                            return true;
-                        }
+                        return MethodResponse<string>.Success(string.Empty, $"Email: {user.Email} verify successfully");
                     }
                 }
-                return false;
+                return MethodResponse<string>.Fail("User not found");
             }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
+            return MethodResponse<string>.Fail("Invalid UserId or Token");
         }
 
-        public async Task<bool> UpdateUserDetail(ApplicationUser user)
+        public async Task<MethodResponse<string>> UpdateUserDetail(ApplicationUser user)
         {
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             if (existingUser == null)
             {
-                // User not found
-                return false;
+                return MethodResponse<string>.Fail("User not found with given UserId");
             }
 
             // Update the user details
@@ -170,13 +196,13 @@ namespace SpeakerManagement.Repository
                 // Save changes to the database
                 await _context.SaveChangesAsync();
 
-                return true;
+                return MethodResponse<string>.Success(string.Empty, "User details updated successfully");
             }
 
-            return false;
+            return MethodResponse<string>.Fail("Error while updating user details");
         }
 
-        public async Task<bool> DeleteUser(string userId)
+        public async Task<MethodResponse<string>> DeleteUser(string userId)
         {
             // Find the user by their ID
             var user = await _userManager.FindByIdAsync(userId);
@@ -184,9 +210,59 @@ namespace SpeakerManagement.Repository
             {
                 // Delete the user using UserManager
                 _ = await _userManager.DeleteAsync(user);
-                return true;
+                return MethodResponse<string>.Success(string.Empty, "User deleted successfully");
             }
-            return false;
+            return MethodResponse<string>.Fail("User not found");
+        }
+
+        public async Task<MethodResponse<object>> GetLoggedInUserDetail()
+        {
+            var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+            if (user != null)
+            {
+                return MethodResponse<object>.Success(user);
+            }
+            return MethodResponse<object>.Fail("User Not Found");
+        }
+
+        public async Task<MethodResponse<IList<string>>> GetLoggedInUserRoles()
+        {
+            var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+            if (user != null)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                return MethodResponse<IList<string>>.Success(roles);
+            }
+            return MethodResponse<IList<string>>.Fail("User Not Found");
+        }
+
+        #endregion
+
+        #region private
+        private MethodResponse<string> SendInvitation(int orgId, string name, string userEmail, string confirmationLink, string password)
+        {
+            var org = _context.Organizations.Where(x => x.Id == orgId).AsNoTracking().FirstOrDefault();
+
+            if (org == null)
+                return MethodResponse<string>.Fail("Organization not found with given id");
+
+            var subject = $"{org.OrganizationName} has invited you to be a Speaker!";
+            var message = @$"
+                            <html>
+                                <head>
+                                    <title>Invitation Email</title>
+                                </head>
+                                <body>
+                                    <p>Hello {name}, you have been invited by {org.OrganizationName} to be a Speaker for a future event.</p>
+                                    <p>Complete your account registration by clicking this link or copy & pasting it into your preferred browser:</p>
+                                    <p><a href='{confirmationLink}'>{confirmationLink}</a></p>
+                                    <p>After confirm login you can login using Password: {password}</p>
+                                </body>
+                            </html>";
+
+            MailSender.SendEmailConfirmationMail(userEmail, subject, message, "");
+
+            return MethodResponse<string>.Success("Mail Sent Successfully");
         }
         #endregion
     }

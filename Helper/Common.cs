@@ -51,7 +51,21 @@ namespace SpeakerManagement.Helper
             return result;
         }
 
+        public static List<SelectListItem> BuildSelectListItem<TEnum>()
+        {
+            var result = new List<SelectListItem>();
+
+            foreach (var item in Enum.GetValues(typeof(TEnum)))
+            {
+                var text = GetEnumDescription(item as Enum);
+                result.Add(new SelectListItem { Text = text, Value = item.ToString() });
+            }
+            return result;
+        }
+
         public static List<SelectListItem> InputTypeList() => BuildSelectList<InputTypes>();
+        public static List<SelectListItem> ValidationList() => BuildSelectListItem<Validation>();
+        public static List<SelectListItem> UserRoleList() => BuildSelectListItem<UserRoles>();
 
         #region Password generator
         public static string GeneratePassword()

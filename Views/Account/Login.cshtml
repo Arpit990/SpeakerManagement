@@ -6,45 +6,6 @@
     Layout = "_Account";
 }
 
-@* <div class="row">
-    <div class="col-md-6 offset-3">
-        <p>
-            <h4>Log in to your account</h4>
-        </p>
-
-        @if (TempData["Error"] != null)
-        {
-            <div class="col-md-12 alert alert-danger">
-                <span><b>Sorry!</b> - @TempData["Error"] </span>
-            </div>
-        }
-
-        <div class="row">
-            <div class="col-md-8 offset-2">
-                <form asp-action="Login">
-                    
-
-                    <div class="form-group">
-                        <label asp-for="Email" class="control-label"></label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Password" class="control-label"></label>
-                        <input asp-for="Password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <input class="btn btn-outline-success float-right" type="submit" value="Log in" />
-                        <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Login">Cancel</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div> *@
-
 
 <div class="account-pages pt-4 pt-sm-5 pb-sm-3">
     <div class="container">
@@ -52,9 +13,9 @@
             <div class="col-xxl-4 col-lg-5">
                 <div class="card">
 
-                    <div class="card-header py-4 text-center bg-primary">
+                    <div class="card-header py-3 text-center bg-primary">
                         <a href="index.html">
-                            <span><img src="~/assets/images/logo.png" alt="logo" height="22"></span>
+                            <span><img src="~/assets/images/logo.webp" alt="logo" height="32"></span>
                         </a>
                     </div>
 
@@ -65,26 +26,26 @@
                             <p class="text-muted mb-4">Enter your email and password to access admin panel.</p>
                         </div>
 
-                        <form asp-action="Login">
+                        <form id="LoginForm" asp-action="Login">
                             
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                             <div class="mb-3">
                                 <label asp-for="Email" class="form-label control-label"></label>
-                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                                <input asp-for="Email" name="Email" class="form-control" placeholder="Enter your email" />
                                 <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
-                                <a href="pages-recoverpw.html" class="text-muted float-end"><small>Forgot your password?</small></a>
+                                <a asp-action="ResetPassword" class="text-muted float-end"><small>Forgot your password?</small></a>
                                 <label asp-for="Password" class="form-label control-label"></label>
                                 <div class="input-group input-group-merge">
-                                    <input asp-for="Password" id="password" class="form-control" placeholder="Enter your password" />
-                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <input asp-for="Password" id="password" name="Password" class="form-control" placeholder="Enter your password" />
                                     <div class="input-group-text" data-password="false">
                                         <span class="password-eye"></span>
                                     </div>
                                 </div>
+                                <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3 mb-3">
@@ -113,3 +74,7 @@
 
     </div>
 </div>
+
+@section scripts {
+    <script src="~/js/pages/Login.js"></script>
+}

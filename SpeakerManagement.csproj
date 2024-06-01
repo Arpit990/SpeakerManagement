@@ -17,12 +17,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\assets\vendor\datatables.net-select\js\dataTables.select.min.js" />
+    <None Include="wwwroot\assets\vendor\dropzone\min\dropzone.min.js" />
     <None Include="wwwroot\assets\vendor\flatpickr\flatpickr.min.js" />
+    <None Include="wwwroot\assets\vendor\quill\quill.min.js" />
+    <None Include="wwwroot\assets\vendor\select2\js\select2.min.js" />
     <None Include="wwwroot\js\datatable.js" />
     <None Include="wwwroot\js\validation.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="LinqKit" Version="1.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
@@ -32,6 +37,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\EventLogo\" />
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
 </Project>

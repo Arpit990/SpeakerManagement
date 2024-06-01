@@ -20,3 +20,28 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+/* Datatable Style */
+.selected {
+    background-color: #5a66f361 !important;
+}
+
+td {
+    border: none !important;
+}
+
+
+/* Form Validation Style */
+.error {
+    color: #fa5c7c !important;
+}
+
+.is-invalid {
+    background-image: none !important;
+}
+
+.is-valid {
+    background-image: none !important;
+    border-color: #dee2e6 !important;
+}

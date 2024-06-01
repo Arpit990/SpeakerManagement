@@ -1,16 +1,13 @@
 var tblUsers;
 
 $(document).ready(function () {
+    FormValidation();
     BindUserTable();
 
     $("#btnAddUser").on("click", function () {
         $("#addEditUserModalLabel").html("Add User");
         $("#addEditUserModalForm").attr("action", "/User/Create");
         $("#addEditUserModal").modal("show");
-    });
-
-    $("#addEditUserModalFormSaveBtn").on("click", function () {
-        SubmitFormData();
     });
 
     $(".btnClose").on("click", function () {
@@ -32,23 +29,23 @@ function BindUserTable() {
                 return meta.row + 1;
             }
         },
-        { "title": "First Name", "name": "firstName", "orderable": false, "targets": 1 },
-        { "title": "Last Name", "name": "lastName", "orderable": false, "targets": 2 },
-        { "title": "Email", "name": "email", "orderable": false, "targets": 3 },
-        { "title": "Phone", "name": "phoneNumber", "orderable": false, "targets": 4 },
+        { "title": "First Name", "name": "firstName", "orderable": true, "targets": 1 },
+        { "title": "Last Name", "name": "lastName", "orderable": true, "targets": 2 },
+        { "title": "Email", "name": "email", "orderable": true, "targets": 3 },
+        { "title": "Phone", "name": "phoneNumber", "orderable": true, "targets": 4 },
         {
             "title": "Website", "name": "website", "orderable": false, "targets": 5,
             "render": function (data, type, row, meta) {
-                if (type === 'display') {
+                if (type == 'display' && row.website != null) {
                     return `<a href="${row.website}" target="_blank">${row.website}</a>`
                 }
-                return '';
+                return '-';
             }
         },
-        { "title": "Organization", "name": "organizationName", "orderable": false, "targets": 6 },
+        { "title": "Organization", "name": "organizationName", "orderable": true, "targets": 6 },
         { "title": "Role", "name": "role", "orderable": false, "targets": 7 },
         {
-            "title": "Is Activr",
+            "title": "Is Active",
             "name": "isActive",
             "orderable": false,
             "targets": 8,
@@ -100,7 +97,7 @@ function BindUserTable() {
                             type: "POST",
                             data: { id: id },
                             successCallback: function (response) {
-                                showAlert("delete");
+                                showAlert(response.responseJSON);
                                 tblUsers.draw();
                             },
                             errorCallback: function (xhr, status, error) {
@@ -117,15 +114,17 @@ function BindUserTable() {
 function SubmitFormData() {
     let url = $("#addEditUserModalForm").attr('action');
     let data = SerializeFormData("#addEditUserModalForm");
+    let userrole = $("#addEditUserModalForm #UserRole").val()
 
     GlobalAjax({
         url: url,
         type: "POST",
         data: data,
+        additionalData: { UserRole: userrole },
         successCallback: function (response) {
             $("#addEditUserModal").modal("hide");
             ResetForm("#addEditUserModalForm");
-            showAlert("create");
+            showAlert(response.responseJSON);
             tblUsers.draw();
         },
         errorCallback: function (xhr, status, error) {
@@ -140,7 +139,10 @@ function editUserDetail(id) {
         type: "GET",
         data: { id: id },
         successCallback: function (response) {
-            BindFormData(response, "#addEditUserModalForm");
+            if (response.responseJSON.isSuccess)
+                BindFormData(response.responseJSON.responseData, "#addEditUserModalForm");
+            else
+                showAlert(response.responseJSON);
         },
         errorCallback: function (xhr, status, error) {
             console.error(error);
@@ -148,3 +150,43 @@ function editUserDetail(id) {
     });
 }
 
+function FormValidation() {
+    $("#addEditUserModalForm").validate({
+        rules: {
+            FirstName: {
+                required: true,
+            },
+            LastName: {
+                required: true
+            },
+            Email: {
+                required: true,
+                email: true
+            },
+            OrganizationId: {
+                required: true
+            }
+        },
+        messages: {
+            FirstName: "Please Enter First Name",
+            LastName: "Please Select Last Type",
+            OrganizationId: "Please Select Organization",
+            email: {
+                required: "Please Enter Email",
+                email: "Please Enter Valid Email"
+            }
+        },
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        highlight: function (element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        },
+        submitHandler: function () {
+            SubmitFormData();
+        }
+    });
+}

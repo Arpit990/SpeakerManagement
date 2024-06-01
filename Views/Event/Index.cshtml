@@ -17,12 +17,14 @@
         <div class="card">
             <div class="card-body">
                 <div class="text-end mb-3">
-                    <a asp-action="create" class="btn btn-sm btn-outline-primary">Add Event</a>
+                    <a asp-action="create" class="btn btn-sm btn-soft-primary">Add Event</a>
+                    <button type="button" id="btnAssignEvent" class="btn btn-sm btn-outline-primary" disabled >Assign a Speaker</button>
                 </div>
 
                 <table id="tblEvents" class="table table-sm dt-responsive nowrap table-striped w-100">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>SerNo</th>
                             <th>Event Name</th>
                             <th>Logo</th>
@@ -37,7 +39,7 @@
     </div>
 </div>
 
-<partial name="~/Views/Modal/_AddEditEvent.cshtml" />
+<partial name="~/Views/Modal/_AssignEvent.cshtml" />
 
 @section scripts {
     <script src="~/js/pages/Event.js"></script>
